@@ -24,7 +24,6 @@ export function authRoutes(fastify: FastifyInstance) {
     '/register',
     async (request, reply) => {
       try {
-        // TODO: Validar que el usuario no exista por correo
         reply.send(await registerUser(fastify, request.body))
       } catch (error) {
         applog.errorApi(error)

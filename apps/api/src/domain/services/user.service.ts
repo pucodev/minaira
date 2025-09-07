@@ -3,7 +3,7 @@ import type UserModel from '#models/user.model'
 
 import { type DbService, MainService } from './main.service.ts'
 
-export class UserService extends MainService {
+export class UserService extends MainService<UserNode> {
   constructor(db: DbService) {
     super(db, 'users', [
       { key: 'first_name', type: 'string' },

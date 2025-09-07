@@ -19,7 +19,7 @@ export type FilterOperator =
   | 'range'
 
 export interface ServiceSearchQuery {
-  operator: 'and' | 'or' | 'disabled'
+  operator?: 'and' | 'or' | 'disabled'
   conditions: {
     field: string
     operator: FilterOperator
@@ -177,12 +177,65 @@ export default function parseQueryParams(
     }
   }
 
+  const response = cleanServiceQuery(result, validator)
+
+  applog.debug('========================')
+  applog.debug('RESULT = ', JSON.stringify(response, null, 2))
+  applog.debug('========================')
+  return response
+}
+
+/**
+ * Cleans and validates a `ServiceQuery` object based on a given validator.
+ *
+ * This function ensures that:
+ * - Only allowed fields are kept in the `fields` array.
+ * - Search conditions are filtered so they only reference valid fields.
+ * - If no valid search conditions remain, the search operator is set to `'disabled'`.
+ * - If the search operator is `'disabled'`, all search conditions are cleared.
+ *
+ * @param query - The `ServiceQuery` object to clean and validate.
+ * @param validator - Optional validation rules for the query:
+ *   - `fields`: Whether to validate the `fields` property (default: `true`).
+ *   - `search`: Whether to validate the `search` property (default: `true`).
+ *   - `validFields`: A list of allowed field names for both `fields` and search conditions.
+ *   - `validSearchFields`: A specific list of allowed fields only for search conditions.
+ *
+ * @returns The cleaned and validated `ServiceQuery` object.
+ *
+ * @example
+ * ```ts
+ * const query: ServiceQuery = {
+ *   fields: ['id', 'name', 'invalid_field'],
+ *   search: {
+ *     operator: 'and',
+ *     conditions: [
+ *       { field: 'name', value: 'John' },
+ *       { field: 'invalid_field', value: 'test' }
+ *     ]
+ *   }
+ * };
+ *
+ * const validator: ServiceQueryValidator = {
+ *   validFields: ['id', 'name'],
+ *   validSearchFields: ['name']
+ * };
+ *
+ * const cleaned = cleanServiceQuery(query, validator);
+ * // cleaned.fields -> ['id', 'name']
+ * // cleaned.search.conditions -> [{ field: 'name', value: 'John' }]
+ * ```
+ */
+export function cleanServiceQuery(
+  query: ServiceQuery,
+  validator: ServiceQueryValidator = { fields: true, search: true },
+) {
   // ================
   // Validate fields
   // ================
   if (validator?.validFields && validator.validFields.length > 0) {
     const validFieldsSet = new Set(validator.validFields)
-    result.fields = result.fields.filter(f => validFieldsSet.has(f))
+    query.fields = query.fields.filter(f => validFieldsSet.has(f))
   }
 
   // ===============
@@ -197,24 +250,21 @@ export default function parseQueryParams(
   }
   if (validSearchFields.length > 0) {
     const validFieldsSet = new Set(validSearchFields)
-    result.search.conditions = result.search.conditions.filter(item =>
+    query.search.conditions = query.search.conditions.filter(item =>
       validFieldsSet.has(item.field),
     )
   }
 
   // Disabled sarch if conditions is empty
-  if (result.search.conditions.length === 0) {
-    result.search.operator = 'disabled'
+  if (query.search.conditions.length === 0) {
+    query.search.operator = 'disabled'
   }
   // Remove conditions if search is disabled
-  if (result.search.operator === 'disabled') {
-    result.search.conditions = []
+  if (query.search.operator === 'disabled') {
+    query.search.conditions = []
   }
 
-  console.log('========================')
-  console.log('RESULT = ', JSON.stringify(result, null, 2))
-  console.log('========================')
-  return result
+  return query
 }
 
 /**

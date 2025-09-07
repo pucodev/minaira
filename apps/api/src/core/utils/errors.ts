@@ -5,6 +5,9 @@ export const API_ERROR_CODES = {
   AUTH_REGISTER_PASSWORD: {
     message: 'Password must be at least 8 characters long',
   },
+  AUTH_USER_ALREADY_EXISTS: {
+    message: 'User already exist',
+  },
 } as const
 
 export type ApiErrorCode = keyof typeof API_ERROR_CODES

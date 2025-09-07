@@ -2,7 +2,11 @@ import format from 'pg-format'
 
 import type { DbField, DbValue } from '#services/main.service'
 import { toNumberSafe } from '#utils/index'
-import parseQueryParams, { cleanFields } from '#utils/query'
+import parseQueryParams, {
+  type ServiceQuery,
+  cleanFields,
+  cleanServiceQuery,
+} from '#utils/query'
 
 import { applog } from './logger.ts'
 
@@ -209,8 +213,66 @@ export function getQuery(
     validFields: dbFields.map(f => f.key),
   })
 
-  // Create deafault pg query with selected `fields`
-  let fields = parsedQuery.fields
+  return getQueryFromServiceQuery(parsedQuery, dbFields, tableName)
+}
+
+/**
+ * Builds a parameterized SQL query (`SELECT ... FROM ... WHERE ...`) from a `ServiceQuery` object.
+ *
+ * This function:
+ * - Cleans and validates the given `serviceQuery` against the available database fields.
+ * - Generates a `SELECT` statement including only valid fields.
+ * - Dynamically builds a `WHERE` clause based on search conditions and operators.
+ * - Returns the SQL string along with the corresponding parameter values for safe execution.
+ *
+ * @param serviceQuery - The query definition provided by the service layer, including fields and search conditions.
+ * @param dbFields - The list of available database fields with metadata (`key`, `type`, etc.).
+ * @param tableName - The database table name to run the query against.
+ *
+ * @returns An object containing:
+ * - `sql`: The generated SQL query string.
+ * - `values`: An array of parameter values to be used with the query.
+ *
+ * @example
+ * ```ts
+ * const serviceQuery: ServiceQuery = {
+ *   fields: ['id', 'name'],
+ *   search: {
+ *     operator: 'and',
+ *     conditions: [
+ *       { field: 'id', operator: 'gt', value: 10 },
+ *       { field: 'name', operator: 'contains', value: 'John' }
+ *     ]
+ *   }
+ * }
+ *
+ * const dbFields: DbField[] = [
+ *   { key: 'id', type: 'number' },
+ *   { key: 'name', type: 'string' },
+ *   { key: 'email', type: 'string' }
+ * ]
+ *
+ * const result = getQueryFromServiceQuery(serviceQuery, dbFields, 'users');
+ *
+ * // result.sql ->
+ * // "SELECT id, name FROM users WHERE id > $1 AND name ILIKE $2"
+ *
+ * // result.values ->
+ * // [10, '%John%']
+ * ```
+ */
+export function getQueryFromServiceQuery(
+  serviceQuery: ServiceQuery,
+  dbFields: DbField[],
+  tableName: string,
+) {
+  // First clean serviceQuery
+  cleanServiceQuery(serviceQuery, {
+    validFields: dbFields.map(f => f.key),
+  })
+
+  // If there are no fields, return all available dbFields
+  let fields = serviceQuery.fields
   if (fields.length === 0) {
     fields = dbFields.map(f => f.key)
   }
@@ -219,8 +281,8 @@ export function getQuery(
   const dbQueryValues: (string | number | number[])[] = []
 
   // Add WHERE clause if query has search fields
-  if (parsedQuery.search.operator !== 'disabled') {
-    const conditions = parsedQuery.search.conditions
+  if (serviceQuery.search.operator !== 'disabled') {
+    const conditions = serviceQuery.search.conditions
       .map(item => {
         // Verificamos que el `search field` sea valido con los `dbFields`
         const dbField = dbFields.find(f => f.key === item.field)
@@ -272,9 +334,9 @@ export function getQuery(
       })
       .filter(v => v.trim() !== '')
 
-    // Add condition based on `parsedQuery` search operator
+    // Add condition based on `serviceQuery` search operator
     const whereClause = conditions.join(
-      parsedQuery.search.operator === 'or' ? ' OR ' : ' AND ',
+      serviceQuery.search.operator === 'or' ? ' OR ' : ' AND ',
     )
 
     // Add WHERE clause

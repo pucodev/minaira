@@ -1,7 +1,12 @@
 import type fastifyPostgres from '@fastify/postgres'
-import type { Pool } from 'pg'
+import type { Pool, QueryResultRow } from 'pg'
 
-import { getInsertQuery, getQuery } from '#utils/queryService'
+import type { ServiceQuery } from '#utils/query'
+import {
+  getInsertQuery,
+  getQuery,
+  getQueryFromServiceQuery,
+} from '#utils/queryService'
 
 export interface DbField {
   key: string
@@ -14,7 +19,7 @@ export type DbService =
   | Pool
   | (fastifyPostgres.PostgresDb & Record<string, fastifyPostgres.PostgresDb>)
 
-export class MainService {
+export class MainService<Node extends QueryResultRow> {
   public tableName: string
   public dbFields: DbField[]
   public db: DbService
@@ -25,7 +30,20 @@ export class MainService {
     this.db = db
   }
 
-  async query(query: string | Record<string, string | readonly string[]>) {
+  async queryFromServiceQuery(serviceQuery: ServiceQuery): Promise<Node[]> {
+    const data = getQueryFromServiceQuery(
+      serviceQuery,
+      this.dbFields,
+      this.tableName,
+    )
+
+    const response = await this.db.query<Node>(data.sql, data.values)
+    return response.rows
+  }
+
+  async queryFromString(
+    query: string | Record<string, string | readonly string[]>,
+  ) {
     const data = getQuery(query, this.dbFields, this.tableName)
     return await this.db.query(data.sql, data.values)
   }
