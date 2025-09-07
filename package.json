@@ -2,7 +2,6 @@
   "name": "minaira",
   "version": "1.0.0",
   "description": "Plataforma open-source y self-host para el agendamiento de citas en negocios de servicios",
-  "keywords": [],
   "homepage": "https://github.com/pucodev/minaira#readme",
   "bugs": {
     "url": "https://github.com/pucodev/minaira/issues"
@@ -11,9 +10,14 @@
     "type": "git",
     "url": "git+https://github.com/pucodev/minaira.git"
   },
-  "license": "ISC",
   "author": "",
+  "type": "module",
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
+    "dev:api": "pnpm --filter @minaira/api dev",
+    "migrate:api": "pnpm --filter @minaira/api migrate",
     "prepare": "husky"
   },
   "lint-staged": {
