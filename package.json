@@ -17,6 +17,7 @@
   ],
   "scripts": {
     "dev:api": "pnpm --filter @minaira/api dev",
+    "lint": "eslint .",
     "migrate:api": "pnpm --filter @minaira/api migrate",
     "prepare": "husky"
   },
