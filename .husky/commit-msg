@@ -1,0 +1,28 @@
+#!/bin/sh
+msg_file=$1
+msg=$(cat "$msg_file")
+
+# Get only the name of the branch if there are previous commits
+branch_name=""
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+  branch_name=$(git rev-parse --abbrev-ref HEAD)
+fi
+
+prefix=""
+
+if [[ $branch_name == feature/* ]]; then
+  branch_short=${branch_name#feature/}
+  prefix="($branch_short) "
+elif [[ $branch_name == hotfix/* ]]; then
+  branch_short=${branch_name#hotfix/}
+  prefix="($branch_short) "
+elif [[ $branch_name == release/* ]]; then
+  branch_short=${branch_name#release/}
+  prefix="($branch_short) "
+fi
+
+# Avoid duplicate prefix
+if [[ $msg != "$prefix"* ]]; then
+  echo "$prefix$msg" > "$msg_file"
+fi
+
