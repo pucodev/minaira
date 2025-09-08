@@ -116,9 +116,9 @@ CREATE TABLE public.companies (
 );
 
 -- ===========================================
--- Relación: user_companies (muchos a muchos con rol)
+-- Relación: company_users (muchos a muchos con rol)
 -- ===========================================
-CREATE TABLE public.user_companies (
+CREATE TABLE public.company_users (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   company_id INT NOT NULL REFERENCES public.companies(id) ON DELETE CASCADE,

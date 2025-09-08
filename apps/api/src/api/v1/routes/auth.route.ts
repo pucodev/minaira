@@ -1,8 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 
+import { loginUser, registerUser } from '#controllers/auth.controller'
 import { replyError } from '#utils/index'
-
-import { loginUser, registerUser } from '../controllers/auth.controller.ts'
 
 export interface RegisterParams {
   first_name: string

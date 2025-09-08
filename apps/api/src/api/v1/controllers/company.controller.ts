@@ -28,10 +28,13 @@ export async function getCompanies(
 }
 
 /**
+ * Create company and company_user as admin
  *
- * @param fastify
- * @param userId
- * @param params
+ * @param fastify - fastify instance
+ * @param userId - user that realted to company in compny user as admin
+ * @param params - company params
+ *
+ * @returns Company and company user created
  */
 export async function createCompany(
   fastify: FastifyInstance,
@@ -44,6 +47,6 @@ export async function createCompany(
 
   const company = CompanyModel.buildCreateCompany(params.name, params.slug)
   const companyService = new CompanyService(fastify.pg)
-  const companyCreated = await companyService.insert<CompanyNode>(company.node)
+  const companyCreated = await companyService.createCompany(company, userId)
   return companyCreated
 }

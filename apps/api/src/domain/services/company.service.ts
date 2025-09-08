@@ -1,6 +1,11 @@
 import type { CompanyNode } from '#models/company.model'
 import type CompanyModel from '#models/company.model'
+import {
+  type CompanyUserNode,
+  CompanyUserService,
+} from '#services/companyUser.service'
 import { type DbService, MainService } from '#services/main.service'
+import { ApiError } from '#utils/errors'
 import { getQuery } from '#utils/queryService'
 
 export class CompanyService extends MainService<CompanyNode> {
@@ -19,7 +24,7 @@ export class CompanyService extends MainService<CompanyNode> {
 
     const query = `
     ${data.sql} 
-      LEFT JOIN user_companies AS uc ON companies.id = uc.company_id
+      LEFT JOIN company_users AS uc ON companies.id = uc.company_id
       WHERE uc.user_id = $1 AND uc."role" = $2
     `
 
@@ -28,8 +33,33 @@ export class CompanyService extends MainService<CompanyNode> {
   }
 
   async createCompany(company: CompanyModel, userId: number) {
-    // TODO: Create company
-    await this.insert<CompanyNode>(company.node)
-    // TODO: Create user_companies
+    // FIXME: (#B001) Realizar la creacion en un request que se pueda revertir si falla
+    let createdCompany
+    try {
+      createdCompany = await this.insert<CompanyNode>(company.node)
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message ===
+          'duplicate key value violates unique constraint "companies_slug_key"'
+      ) {
+        throw new ApiError('COMPANIES_SLUG_ALREADY_EXIST')
+      } else {
+        throw error
+      }
+    }
+
+    // Create company_user
+    const service = new CompanyUserService(this.db)
+    const companyUser = await service.insert<CompanyUserNode>({
+      company_id: createdCompany.id,
+      user_id: userId,
+      role: 'admin',
+    })
+
+    return {
+      company: createdCompany,
+      company_user: companyUser,
+    }
   }
 }

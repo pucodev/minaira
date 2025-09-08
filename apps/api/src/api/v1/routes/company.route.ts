@@ -1,11 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 
+import { createCompany, getCompanies } from '#controllers/company.controller'
 import { replyError } from '#utils/index'
-
-import {
-  createCompany,
-  getCompanies,
-} from '../controllers/company.controller.ts'
 
 export interface CreateCompanyParams {
   name: string

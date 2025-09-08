@@ -20,7 +20,7 @@ $$ LANGUAGE plpgsql;
 -- ===========================================
 DO $$
 DECLARE
-    table_list text[] := ARRAY['users', 'companies', 'user_companies', 'countries', 'currencies'];
+    table_list text[] := ARRAY['users', 'companies', 'company_users', 'countries', 'currencies'];
     tbl text;
 BEGIN
     FOREACH tbl IN ARRAY table_list

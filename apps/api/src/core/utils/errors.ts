@@ -58,6 +58,10 @@ export const API_ERROR_CODES = {
     message: 'All fields are required',
     statusCode: 422,
   },
+  COMPANIES_SLUG_ALREADY_EXIST: {
+    message: 'company slug already exist',
+    statusCode: 422,
+  },
 } as const
 
 export type ApiErrorCode = keyof typeof API_ERROR_CODES

@@ -86,7 +86,7 @@ export async function loginUser(
   fastify: FastifyInstance,
   loginNode: LoginParams,
 ) {
-  // TODO: Implement rate limiting for login attempts from the same IP address
+  // TODO: (#B002) Implement rate limiting for login attempts from the same IP address
 
   const baseUserModel = UserModel.buildLogin(
     loginNode.email,
