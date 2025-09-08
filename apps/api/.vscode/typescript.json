@@ -8,5 +8,36 @@
     "prefix": "dlogf",
     "body": ["applog.debug('==========${1}==========')"],
     "description": "Log of debug footer using applog"
+  },
+  "New Model and Node": {
+    "prefix": "model",
+    "body": [
+      "import MainModel, { type MainNode } from '#models/main.model'",
+      "",
+      "export interface ${1}Node extends MainNode {",
+      "  name?: string",
+      "}",
+      "",
+      "export default class ${1}Model extends MainModel<${1}Node> {}"
+    ],
+    "description": "Crear un Modelo"
+  },
+  "New Service": {
+    "prefix": "service",
+    "body": [
+      "import type { ${1}Node } from '#models/$2${1/(.*)/${1:/downcase}/}.model'",
+      "import { type DbService, MainService } from '#services/main.service'",
+      "",
+      "export class ${1}Service extends MainService<${1}Node> {",
+      "  constructor(db: DbService) {",
+      "    super(db, '${3}', [",
+      "      { key: 'id', type: 'number' },",
+      "      { key: 'created_at', type: 'string' },",
+      "      { key: 'updated_at', type: 'string' },",
+      "    ])",
+      "  }",
+      "}"
+    ],
+    "description": "Crear un Service basado en MainService"
   }
 }
