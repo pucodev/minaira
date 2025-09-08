@@ -1,0 +1,12 @@
+{
+  "debug_title": {
+    "prefix": "dlogh",
+    "body": ["applog.debug('========== ${1} ==========')"],
+    "description": "Log of debug with banner using applog"
+  },
+  "debug_footer": {
+    "prefix": "dlogf",
+    "body": ["applog.debug('==========${1}==========')"],
+    "description": "Log of debug footer using applog"
+  }
+}
