@@ -8,6 +8,7 @@
     "#db/*": "./src/infra/db/*.ts",
     "#services/*": "./src/domain/services/*.ts",
     "#models/*": "./src/domain/models/*.ts",
+    "#midlewares/*": "./src/core/midleware/*.ts",
     "#routes/*": "./src/api/v1/routes/*.ts"
   },
   "scripts": {

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { AUTH_SECRET_TOKEN } from '#config/env'
 import MainModel, { type MainNode } from '#models/main.model'
 import { ApiError } from '#utils/errors'
+import { removeKeys } from '#utils/index'
 
 export interface UserNode extends MainNode {
   id?: number
@@ -115,5 +116,9 @@ export default class UserModel extends MainModel<UserNode> {
     }
 
     return await bcrypt.compare(rawPassword, this.node.password)
+  }
+
+  getData() {
+    return removeKeys(this.node, ['id', 'password'])
   }
 }

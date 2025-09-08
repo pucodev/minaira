@@ -2,23 +2,57 @@ export const API_ERROR_CODES = {
   // AUTH REGISTER
   AUTH_REGISTER_ALL_FIELDS_REQUIRED: {
     message: 'All fields are required for registration',
+    statusCode: 422,
   },
   AUTH_REGISTER_PASSWORD: {
     message: 'Password must be at least 8 characters long',
+    statusCode: 422,
   },
   AUTH_USER_ALREADY_EXISTS: {
     message: 'User already exist',
+    statusCode: 409,
   },
   AUTH_REGISTER_NO_SECRET_TOKEN: {
     message: 'Please add `AUTH_SECRET_TOKEN` to environments variables',
+    statusCode: 500,
   },
 
   // AUTH LOGIN
   AUTH_LOGIN_ALL_FIELDS_REQUIRED: {
     message: 'email and passwrod are required',
+    statusCode: 422,
   },
   AUTH_LOGIN_INVALID: {
     message: 'email or password are invalid',
+    statusCode: 403,
+  },
+
+  // AUTH TOKEN
+  AUTH_TOKEN_INVALID: {
+    message: 'invalid token, please login again',
+    statusCode: 403,
+  },
+  AUTH_TOKEN_NO_SECRET_TOKEN: {
+    message: 'Please add `AUTH_SECRET_TOKEN` to environments variables',
+    statusCode: 500,
+  },
+  AUTH_TOKEN_EXPIRED: {
+    message: 'Token expired, please login again',
+    statusCode: 403,
+  },
+  AUTH_TOKEN_ERROR: {
+    message: 'Invalid code, please login again',
+    statusCode: 403,
+  },
+  AUTH_TOKEN_UNKNOWN: {
+    message: 'Invalid code, please login again',
+    statusCode: 403,
+  },
+
+  // COMPANIES
+  COMPANIES_NO_USER: {
+    message: 'Please send a user id',
+    statusCode: 400,
   },
 } as const
 
@@ -28,13 +62,13 @@ export class ApiError extends Error {
   statusCode: number
   code: ApiErrorCode | 'UNKNOWN_ERROR'
 
-  constructor(code: ApiErrorCode, statusCode = 400) {
+  constructor(code: ApiErrorCode, statusCode?: number) {
     const error = API_ERROR_CODES[code]
     const message = error ? error.message : 'Unknown error'
     super(message)
 
     this.code = code || 'UNKNOWN_ERROR'
-    this.statusCode = statusCode
+    this.statusCode = statusCode || error.statusCode || 400
 
     Object.setPrototypeOf(this, ApiError.prototype)
   }

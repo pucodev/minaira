@@ -198,6 +198,7 @@ export const NUMBER_FIELD_OPERATORS: Record<
  * @param query - Raw query parameters (string or object) to be parsed into fields and filters.
  * @param dbFields - List of valid database fields (with `key` and `type`) allowed in the query.
  * @param tableName - Name of the database table to query from.
+ * @param forcePrefix - Force to put table name as prefix in all SELECT fields
  *
  * @returns An object containing:
  * - `sql`: A parameterized SQL query string.
@@ -207,13 +208,14 @@ export function getQuery(
   query: string | Record<string, string | readonly string[]>,
   dbFields: DbField[],
   tableName: string,
+  forcePrefix = false,
 ) {
   // Get parsedData with `fields` and `search`
   const parsedQuery = parseQueryParams(query, {
     validFields: dbFields.map(f => f.key),
   })
 
-  return getQueryFromServiceQuery(parsedQuery, dbFields, tableName)
+  return getQueryFromServiceQuery(parsedQuery, dbFields, tableName, forcePrefix)
 }
 
 /**
@@ -228,6 +230,7 @@ export function getQuery(
  * @param serviceQuery - The query definition provided by the service layer, including fields and search conditions.
  * @param dbFields - The list of available database fields with metadata (`key`, `type`, etc.).
  * @param tableName - The database table name to run the query against.
+ * @param forcePrefix - Force to put table name as prefix in all SELECT fields
  *
  * @returns An object containing:
  * - `sql`: The generated SQL query string.
@@ -265,6 +268,7 @@ export function getQueryFromServiceQuery(
   serviceQuery: ServiceQuery,
   dbFields: DbField[],
   tableName: string,
+  forcePrefix = false,
 ) {
   // First clean serviceQuery
   cleanServiceQuery(serviceQuery, {
@@ -277,7 +281,11 @@ export function getQueryFromServiceQuery(
     fields = dbFields.map(f => f.key)
   }
 
-  let dbQuery = format('SELECT %I FROM %I', fields, tableName)
+  if (forcePrefix) {
+    fields = fields.map(f => `${tableName}.${f}`)
+  }
+
+  let dbQuery = format('SELECT %s FROM %I', fields, tableName)
   const dbQueryValues: (string | number | number[])[] = []
 
   // Add WHERE clause if query has search fields
@@ -343,8 +351,8 @@ export function getQueryFromServiceQuery(
     dbQuery = `${dbQuery} WHERE ${whereClause}`
   }
 
-  console.log('QUERY = ', dbQuery)
-  console.log('VALUES = ', dbQueryValues)
+  applog.debug('QUERY = ', dbQuery)
+  applog.debug('VALUES = ', dbQueryValues)
 
   return {
     sql: dbQuery,

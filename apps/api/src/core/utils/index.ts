@@ -75,3 +75,20 @@ export function replyError(reply: FastifyReply, error: unknown) {
     reply.status(500).send({ success: false, error: getErrorMessage(error) })
   }
 }
+
+/**
+ * Removes specified keys from an object.
+ *
+ * @template T The type of the input object.
+ * @param obj The input object.
+ * @param keysToRemove An array of keys to remove from the object.
+ * @returns A new object with the specified keys removed.
+ */
+export function removeKeys<T extends object>(
+  obj: T,
+  keysToRemove: string[],
+): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([key]) => !keysToRemove.includes(key)),
+  ) as Partial<T>
+}
