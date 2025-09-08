@@ -28,7 +28,7 @@ export interface ServiceSearchQuery {
 }
 
 export interface ServiceQuery {
-  fields: string[]
+  fields?: string[]
   search: ServiceSearchQuery
 }
 
@@ -235,7 +235,7 @@ export function cleanServiceQuery(
   // ================
   if (validator?.validFields && validator.validFields.length > 0) {
     const validFieldsSet = new Set(validator.validFields)
-    query.fields = query.fields.filter(f => validFieldsSet.has(f))
+    query.fields = (query.fields || []).filter(f => validFieldsSet.has(f))
   }
 
   // ===============

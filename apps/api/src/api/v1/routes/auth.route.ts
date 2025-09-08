@@ -1,10 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 
-import { ApiError } from '#utils/errors'
-import { getErrorMessage } from '#utils/index'
-import { applog } from '#utils/logger'
+import { replyError } from '#utils/index'
 
-import { registerUser } from '../controllers/auth.controller.ts'
+import { loginUser, registerUser } from '../controllers/auth.controller.ts'
 
 export interface RegisterParams {
   first_name: string
@@ -12,6 +10,11 @@ export interface RegisterParams {
   email: string
   password: string
   country_id: number
+}
+
+export interface LoginParams {
+  email: string
+  password: string
 }
 
 /**
@@ -29,17 +32,19 @@ export function authRoutes(fastify: FastifyInstance) {
           data: await registerUser(fastify, request.body),
         })
       } catch (error) {
-        applog.errorApi(error)
-        if (error instanceof ApiError) {
-          reply
-            .status(error.statusCode)
-            .send({ success: false, error: error.getPayload() })
-        } else {
-          reply
-            .status(500)
-            .send({ success: false, error: getErrorMessage(error) })
-        }
+        replyError(reply, error)
       }
     },
   )
+
+  fastify.post<{ Body: LoginParams }>('/login', async (request, reply) => {
+    try {
+      reply.send({
+        success: true,
+        data: await loginUser(fastify, request.body),
+      })
+    } catch (error) {
+      replyError(reply, error)
+    }
+  })
 }

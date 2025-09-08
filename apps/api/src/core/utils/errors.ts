@@ -1,4 +1,5 @@
 export const API_ERROR_CODES = {
+  // AUTH REGISTER
   AUTH_REGISTER_ALL_FIELDS_REQUIRED: {
     message: 'All fields are required for registration',
   },
@@ -10,6 +11,14 @@ export const API_ERROR_CODES = {
   },
   AUTH_REGISTER_NO_SECRET_TOKEN: {
     message: 'Please add `AUTH_SECRET_TOKEN` to environments variables',
+  },
+
+  // AUTH LOGIN
+  AUTH_LOGIN_ALL_FIELDS_REQUIRED: {
+    message: 'email and passwrod are required',
+  },
+  AUTH_LOGIN_INVALID: {
+    message: 'email or password are invalid',
   },
 } as const
 

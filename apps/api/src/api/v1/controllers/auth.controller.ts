@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 
 import UserModel from '#models/user.model'
-import type { RegisterParams } from '#routes/auth.route'
+import type { LoginParams, RegisterParams } from '#routes/auth.route'
 import { UserService } from '#services/user.service'
 import { ApiError } from '#utils/errors'
 import { applog } from '#utils/logger'
@@ -68,5 +68,56 @@ export async function registerUser(
   return {
     user: createdUser,
     tokens: new UserModel(createdUser).getTokens(),
+  }
+}
+
+/**
+ * Login user
+ *
+ * @param fastify -
+ * @param loginNode -
+ * @returns - user
+ */
+export async function loginUser(
+  fastify: FastifyInstance,
+  loginNode: LoginParams,
+) {
+  // TODO: Implement rate limiting for login attempts from the same IP address
+
+  const baseUserModel = UserModel.buildLogin(
+    loginNode.email,
+    loginNode.password,
+  )
+  baseUserModel.cleanData()
+
+  if (baseUserModel.node.email) {
+    const userService = new UserService(fastify.pg)
+    const users = await userService.queryFromServiceQuery({
+      search: {
+        conditions: [
+          {
+            field: 'email',
+            operator: 'exact',
+            value: baseUserModel.node.email,
+          },
+        ],
+      },
+    })
+
+    if (users.length === 0) {
+      throw new ApiError('AUTH_LOGIN_INVALID', 403)
+    }
+
+    const userModel = new UserModel(users[0])
+    const isValidPassword = await userModel.isValidPassword(loginNode.password)
+
+    if (!isValidPassword) {
+      throw new ApiError('AUTH_LOGIN_INVALID', 403)
+    }
+
+    return {
+      user: userModel.node,
+      tokens: userModel.getTokens(),
+    }
   }
 }

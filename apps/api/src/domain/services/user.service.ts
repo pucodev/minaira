@@ -6,6 +6,7 @@ import { type DbService, MainService } from './main.service.ts'
 export class UserService extends MainService<UserNode> {
   constructor(db: DbService) {
     super(db, 'users', [
+      { key: 'id', type: 'number' },
       { key: 'first_name', type: 'string' },
       { key: 'last_name', type: 'string' },
       { key: 'password', type: 'string' },

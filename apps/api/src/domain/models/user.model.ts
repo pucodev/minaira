@@ -14,6 +14,7 @@ export interface UserNode extends MainNode {
   password?: string
   is_active?: boolean
   country_id?: number
+  raw_password?: string
 }
 
 export interface DecodedToken {
@@ -42,6 +43,17 @@ export default class UserModel extends MainModel<UserNode> {
       email,
       password: await UserModel.hashPassword(password),
       country_id: countryId,
+    })
+  }
+
+  static buildLogin(email: string | undefined, password: string | undefined) {
+    if (!email || !password) {
+      throw new ApiError('AUTH_LOGIN_ALL_FIELDS_REQUIRED', 422)
+    }
+
+    return new UserModel({
+      email,
+      raw_password: password,
     })
   }
 
@@ -92,5 +104,16 @@ export default class UserModel extends MainModel<UserNode> {
       access_token: accessToken,
       refresh_token: refreshToken,
     }
+  }
+
+  async isValidPassword(rawPassword: string) {
+    if (
+      typeof this.node.password === 'undefined' ||
+      this.node.password === ''
+    ) {
+      throw new ApiError('AUTH_LOGIN_ALL_FIELDS_REQUIRED', 403)
+    }
+
+    return await bcrypt.compare(rawPassword, this.node.password)
   }
 }

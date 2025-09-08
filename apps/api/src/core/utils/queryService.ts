@@ -272,7 +272,7 @@ export function getQueryFromServiceQuery(
   })
 
   // If there are no fields, return all available dbFields
-  let fields = serviceQuery.fields
+  let fields = serviceQuery.fields || []
   if (fields.length === 0) {
     fields = dbFields.map(f => f.key)
   }
