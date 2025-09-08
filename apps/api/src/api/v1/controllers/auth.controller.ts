@@ -1,7 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 
+import type { CompanyNode } from '#models/company.model'
 import UserModel from '#models/user.model'
 import type { LoginParams, RegisterParams } from '#routes/auth.route'
+import { CompanyService } from '#services/company.service'
 import { UserService } from '#services/user.service'
 import { ApiError } from '#utils/errors'
 import { applog } from '#utils/logger'
@@ -65,9 +67,11 @@ export async function registerUser(
   applog.debug(createdUser)
   applog.debug('==================================')
 
+  const createdUserModel = new UserModel(createdUser)
+
   return {
-    user: createdUser,
-    tokens: new UserModel(createdUser).getTokens(),
+    user: createdUserModel.getData(),
+    tokens: createdUserModel.getTokens(),
   }
 }
 
@@ -115,9 +119,17 @@ export async function loginUser(
       throw new ApiError('AUTH_LOGIN_INVALID', 403)
     }
 
+    // Add companies
+    const companyService = new CompanyService(fastify.pg)
+    let companies: CompanyNode[] = []
+    if (userModel.node.id) {
+      companies = await companyService.fetch(userModel.node.id)
+    }
+
     return {
-      user: userModel.node,
+      user: userModel.getData(),
       tokens: userModel.getTokens(),
+      companies,
     }
   }
 }
