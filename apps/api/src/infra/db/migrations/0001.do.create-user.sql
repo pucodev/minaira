@@ -109,6 +109,7 @@ CREATE TABLE public.users (
 CREATE TABLE public.companies (
   id SERIAL PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
+  slug VARCHAR(255) UNIQUE NOT NULL,
   country_id INT REFERENCES public.countries(id),
   created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamptz DEFAULT CURRENT_TIMESTAMP

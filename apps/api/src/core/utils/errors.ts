@@ -19,7 +19,7 @@ export const API_ERROR_CODES = {
 
   // AUTH LOGIN
   AUTH_LOGIN_ALL_FIELDS_REQUIRED: {
-    message: 'email and passwrod are required',
+    message: 'email and password are required',
     statusCode: 422,
   },
   AUTH_LOGIN_INVALID: {
@@ -53,6 +53,10 @@ export const API_ERROR_CODES = {
   COMPANIES_NO_USER: {
     message: 'Please send a user id',
     statusCode: 400,
+  },
+  COMPANIES_CREATE_ALL_FIELDS_REQUIRED: {
+    message: 'All fields are required',
+    statusCode: 422,
   },
 } as const
 
