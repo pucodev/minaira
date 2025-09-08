@@ -8,6 +8,9 @@ export const API_ERROR_CODES = {
   AUTH_USER_ALREADY_EXISTS: {
     message: 'User already exist',
   },
+  AUTH_REGISTER_NO_SECRET_TOKEN: {
+    message: 'Please add `AUTH_SECRET_TOKEN` to environments variables',
+  },
 } as const
 
 export type ApiErrorCode = keyof typeof API_ERROR_CODES

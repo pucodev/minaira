@@ -1,9 +1,12 @@
 import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 
+import { AUTH_SECRET_TOKEN } from '#config/env'
 import MainModel, { type MainNode } from '#models/main.model'
 import { ApiError } from '#utils/errors'
 
 export interface UserNode extends MainNode {
+  id?: number
   first_name?: string
   last_name?: string
   email?: string
@@ -11,6 +14,10 @@ export interface UserNode extends MainNode {
   password?: string
   is_active?: boolean
   country_id?: number
+}
+
+export interface DecodedToken {
+  user_id: number
 }
 
 export default class UserModel extends MainModel<UserNode> {
@@ -56,5 +63,34 @@ export default class UserModel extends MainModel<UserNode> {
 
   public static async hashPassword(password: string) {
     return await bcrypt.hash(password, 12)
+  }
+
+  getTokens() {
+    if (typeof AUTH_SECRET_TOKEN === 'undefined' || AUTH_SECRET_TOKEN === '') {
+      throw new ApiError('AUTH_REGISTER_NO_SECRET_TOKEN', 500)
+    }
+
+    const userId = this.node.id
+
+    if (typeof userId === 'undefined') {
+      return
+    }
+
+    const data: DecodedToken = {
+      user_id: userId,
+    }
+
+    const accessToken = jwt.sign(data, AUTH_SECRET_TOKEN || '', {
+      expiresIn: '1d',
+    })
+
+    const refreshToken = jwt.sign(data, AUTH_SECRET_TOKEN || '', {
+      expiresIn: '15d',
+    })
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    }
   }
 }

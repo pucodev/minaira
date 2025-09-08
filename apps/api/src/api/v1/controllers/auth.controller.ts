@@ -59,5 +59,14 @@ export async function registerUser(
     baseUserModel.node.password,
     baseUserModel.node.country_id,
   )
-  return await userService.register(userModel)
+
+  const createdUser = await userService.register(userModel)
+  applog.debug('========== CREATED USER ==========')
+  applog.debug(createdUser)
+  applog.debug('==================================')
+
+  return {
+    user: createdUser,
+    tokens: new UserModel(createdUser).getTokens(),
+  }
 }

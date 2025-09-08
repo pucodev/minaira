@@ -24,13 +24,20 @@ export function authRoutes(fastify: FastifyInstance) {
     '/register',
     async (request, reply) => {
       try {
-        reply.send(await registerUser(fastify, request.body))
+        reply.send({
+          success: true,
+          data: await registerUser(fastify, request.body),
+        })
       } catch (error) {
         applog.errorApi(error)
         if (error instanceof ApiError) {
-          reply.status(error.statusCode).send({ error: error.getPayload() })
+          reply
+            .status(error.statusCode)
+            .send({ success: false, error: error.getPayload() })
         } else {
-          reply.status(500).send({ error: getErrorMessage(error) })
+          reply
+            .status(500)
+            .send({ success: false, error: getErrorMessage(error) })
         }
       }
     },
