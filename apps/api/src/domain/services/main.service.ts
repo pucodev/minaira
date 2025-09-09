@@ -1,5 +1,7 @@
-import type fastifyPostgres from '@fastify/postgres'
-import type { Pool, QueryResultRow } from 'pg'
+// import type fastifyPostgres from '@fastify/postgres'
+// import type { Pool, QueryResultRow } from 'pg'
+import type { PostgresDb } from '@fastify/postgres'
+import type { PoolClient, QueryResultRow } from 'pg'
 
 import type { ServiceQuery } from '#utils/query'
 import {
@@ -15,9 +17,9 @@ export interface DbField {
 
 export type DbValue = any
 
-export type DbService =
-  | Pool
-  | (fastifyPostgres.PostgresDb & Record<string, fastifyPostgres.PostgresDb>)
+export type DbService = PostgresDb
+// | Pool
+// | (fastifyPostgres.PostgresDb & Record<string, fastifyPostgres.PostgresDb>)
 
 export class MainService<Node extends QueryResultRow> {
   public tableName: string
@@ -53,6 +55,15 @@ export class MainService<Node extends QueryResultRow> {
   ): Promise<Node> {
     const data = getInsertQuery(params, this.dbFields, this.tableName)
     const response = await this.db.query(data.sql, data.values)
+    return response.rows[0] || {}
+  }
+
+  async insertTransact<Node extends Record<string, DbValue>>(
+    params: Node,
+    client: PoolClient,
+  ): Promise<Node> {
+    const data = getInsertQuery(params, this.dbFields, this.tableName)
+    const response = await client.query(data.sql, data.values)
     return response.rows[0] || {}
   }
 }

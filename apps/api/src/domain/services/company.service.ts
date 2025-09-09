@@ -33,33 +33,40 @@ export class CompanyService extends MainService<CompanyNode> {
   }
 
   async createCompany(company: CompanyModel, userId: number) {
-    // FIXME: (#B001) Realizar la creacion en un request que se pueda revertir si falla
-    let createdCompany
-    try {
-      createdCompany = await this.insert<CompanyNode>(company.node)
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message ===
-          'duplicate key value violates unique constraint "companies_slug_key"'
-      ) {
-        throw new ApiError('COMPANIES_SLUG_ALREADY_EXIST')
-      } else {
-        throw error
+    return this.db.transact(async client => {
+      let createdCompany
+      try {
+        createdCompany = await this.insertTransact<CompanyNode>(
+          company.node,
+          client,
+        )
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message ===
+            'duplicate key value violates unique constraint "companies_slug_key"'
+        ) {
+          throw new ApiError('COMPANIES_SLUG_ALREADY_EXIST')
+        } else {
+          throw error
+        }
       }
-    }
 
-    // Create company_user
-    const service = new CompanyUserService(this.db)
-    const companyUser = await service.insert<CompanyUserNode>({
-      company_id: createdCompany.id,
-      user_id: userId,
-      role: 'admin',
+      // Create company_user
+      const service = new CompanyUserService(this.db)
+      const companyUser = await service.insertTransact<CompanyUserNode>(
+        {
+          company_id: createdCompany.id,
+          user_id: userId,
+          role: 'admin',
+        },
+        client,
+      )
+
+      return {
+        company: createdCompany,
+        company_user: companyUser,
+      }
     })
-
-    return {
-      company: createdCompany,
-      company_user: companyUser,
-    }
   }
 }
