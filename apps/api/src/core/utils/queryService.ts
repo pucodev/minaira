@@ -378,8 +378,28 @@ export function getInsertQuery(
     dbFields.map(f => f.key),
   )
   const fields = Object.keys(validParams)
-  const values = fields.map(f => validParams[f])
-  const placeholders = fields.map((_, index) => `$${index + 1}`).join(', ')
+
+  // Add the fields and placeholders for the values
+  // If it is a Point, we transform it to its respective insert query `ST_SetSRID(ST_MakePoint($${index}, $${inde+1}), 4326)`
+  const placeholders: string[] = []
+  const values: any[] = []
+  let index = 1
+  fields.forEach(field => {
+    const value = params[field]
+    if (value instanceof Point) {
+      values.push(value.lon)
+      values.push(value.lat)
+      placeholders.push(
+        `ST_SetSRID(ST_MakePoint($${index}, $${index + 1}), 4326)`,
+      )
+      index = index + 2
+    } else {
+      values.push(value)
+      placeholders.push(`$${index}`)
+      index++
+    }
+  })
+
   const query = `INSERT INTO ${tableName} (${fields.join(', ')}) VALUES (${placeholders}) RETURNING *;`
 
   applog.debug({ query })
@@ -388,5 +408,15 @@ export function getInsertQuery(
   return {
     sql: query,
     values,
+  }
+}
+
+export class Point {
+  lon: number
+  lat: number
+
+  constructor(lon: number, lat: number) {
+    this.lon = lon
+    this.lat = lat
   }
 }

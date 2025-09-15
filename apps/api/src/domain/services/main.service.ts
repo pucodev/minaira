@@ -5,6 +5,7 @@ import type { PoolClient, QueryResultRow } from 'pg'
 
 import type { ServiceQuery } from '#utils/query'
 import {
+  Point,
   getInsertQuery,
   getQuery,
   getQueryFromServiceQuery,
@@ -12,10 +13,11 @@ import {
 
 export interface DbField {
   key: string
-  type: 'string' | 'number' | 'boolean'
+  type: 'string' | 'number' | 'boolean' | 'Point'
 }
 
-export type DbValue = any
+// FIXME: Set avilable types
+export type DbValue = any | Point
 
 export type DbService = PostgresDb
 // | Pool

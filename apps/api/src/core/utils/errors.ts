@@ -62,6 +62,16 @@ export const API_ERROR_CODES = {
     message: 'company slug already exist',
     statusCode: 422,
   },
+
+  // LOCATIONS
+  LOCATIONS_NO_USER_COMPANY: {
+    message: 'Please send company_id and user_id',
+    statusCode: 422,
+  },
+  LOCATIONS_UNAUTHORIZED_COMPANY: {
+    message: 'Company does not exist',
+    statusCode: 422,
+  },
 } as const
 
 export type ApiErrorCode = keyof typeof API_ERROR_CODES

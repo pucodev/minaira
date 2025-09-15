@@ -7,10 +7,13 @@ export interface CompanyUserNode {
 }
 
 export class CompanyUserService extends MainService<CompanyUserNode> {
+  static TABLE_NAME = 'company_users'
+
   constructor(db: DbService) {
-    super(db, 'company_users', [
+    super(db, CompanyUserService.TABLE_NAME, [
       { key: 'id', type: 'number' },
       { key: 'user_id', type: 'number' },
+      { key: 'role', type: 'string' },
       { key: 'company_id', type: 'number' },
       { key: 'created_at', type: 'string' },
       { key: 'updated_at', type: 'string' },

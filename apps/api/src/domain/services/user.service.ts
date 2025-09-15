@@ -4,8 +4,10 @@ import type UserModel from '#models/user.model'
 import { type DbService, MainService } from './main.service.ts'
 
 export class UserService extends MainService<UserNode> {
+  static TABLE_NAME = 'users'
+
   constructor(db: DbService) {
-    super(db, 'users', [
+    super(db, UserService.TABLE_NAME, [
       { key: 'id', type: 'number' },
       { key: 'first_name', type: 'string' },
       { key: 'last_name', type: 'string' },

@@ -1,12 +1,23 @@
 import type { FastifyInstance } from 'fastify'
 
-import { createCompany, getCompanies } from '#controllers/company.controller'
+import {
+  createCompany,
+  createLocation,
+  getCompanies,
+} from '#controllers/company.controller'
 import { replyError } from '#utils/index'
 
-export interface CreateCompanyParams {
+export interface CreateCompanyBody {
   name: string
   slug: string
   categories: number[]
+}
+
+export interface CreateLocationBody {
+  name: string
+  lat?: number
+  lon?: number
+  country_id?: number
 }
 
 /**
@@ -26,7 +37,7 @@ export function companyRoutes(fastify: FastifyInstance) {
     }
   })
 
-  fastify.post<{ Body: CreateCompanyParams }>('/', async (request, reply) => {
+  fastify.post<{ Body: CreateCompanyBody }>('/', async (request, reply) => {
     try {
       reply.send({
         success: true,
@@ -40,4 +51,23 @@ export function companyRoutes(fastify: FastifyInstance) {
       replyError(reply, error)
     }
   })
+
+  fastify.post<{ Body: CreateLocationBody; Params: { companyId: number } }>(
+    '/:companyId/locations',
+    async (request, reply) => {
+      try {
+        reply.send({
+          success: true,
+          data: await createLocation(
+            fastify,
+            request.auth_user?.user_id,
+            request.params.companyId,
+            request.body,
+          ),
+        })
+      } catch (error) {
+        replyError(reply, error)
+      }
+    },
+  )
 }
